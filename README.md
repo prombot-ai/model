@@ -32,12 +32,12 @@ host with four RTX 4090 GPUs.
 
 ### Quick-start
 
-All scripts live in `scripts/`. Run them in the order shown below.
+All scripts live in `scripts/qwen3.5-27b/`. Run them in the order shown below.
 
 #### 1 — Set up the environment
 
 ```bash
-bash scripts/setup_environment.sh
+bash scripts/qwen3.5-27b/setup_environment.sh
 source venv/bin/activate
 ```
 
@@ -51,7 +51,7 @@ from mainland China. You can override the mirror if needed:
 ```bash
 PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple \
 PIP_TRUSTED_HOST=mirrors.aliyun.com \
-bash scripts/setup_environment.sh
+bash scripts/qwen3.5-27b/setup_environment.sh
 ```
 
 | Variable | Default | Description |
@@ -68,14 +68,14 @@ bash scripts/setup_environment.sh
 # Optional: set HF_TOKEN if the model requires authentication
 export HF_TOKEN=hf_your_token_here
 
-HF_ENDPOINT=https://hf-mirror.com bash scripts/download_model.sh
+HF_ENDPOINT=https://hf-mirror.com bash scripts/qwen3.5-27b/download_model.sh
 ```
 
 The downloader defaults to the China mirror `https://hf-mirror.com` to avoid direct
 connectivity issues to `huggingface.co`. To use the official endpoint instead:
 
 ```bash
-HF_ENDPOINT=https://huggingface.co bash scripts/download_model.sh
+HF_ENDPOINT=https://huggingface.co bash scripts/qwen3.5-27b/download_model.sh
 ```
 
 | Variable | Default | Description |
@@ -91,7 +91,7 @@ Converts the Hugging Face weights into TensorRT-LLM format with **tensor paralle
 (one shard per GPU).
 
 ```bash
-bash scripts/convert_checkpoint.sh
+bash scripts/qwen3.5-27b/convert_checkpoint.sh
 ```
 
 | Variable | Default | Description |
@@ -107,7 +107,7 @@ bash scripts/convert_checkpoint.sh
 Compiles the converted checkpoint into an optimised engine for the RTX 4090 (Ada Lovelace).
 
 ```bash
-bash scripts/build_engine.sh
+bash scripts/qwen3.5-27b/build_engine.sh
 ```
 
 | Variable | Default | Description |
@@ -127,7 +127,7 @@ bash scripts/build_engine.sh
 Launches an OpenAI-compatible HTTP API on port 8000.
 
 ```bash
-bash scripts/serve.sh
+bash scripts/qwen3.5-27b/serve.sh
 ```
 
 | Variable | Default | Description |
@@ -142,10 +142,10 @@ bash scripts/serve.sh
 #### 6 — Test inference
 
 ```bash
-bash scripts/run_inference.sh
+bash scripts/qwen3.5-27b/run_inference.sh
 
 # Custom prompt
-PROMPT="Explain tensor parallelism in one paragraph." bash scripts/run_inference.sh
+PROMPT="Explain tensor parallelism in one paragraph." bash scripts/qwen3.5-27b/run_inference.sh
 ```
 
 The script calls the `/v1/chat/completions` endpoint and prints the model response.
@@ -197,12 +197,13 @@ curl http://localhost:8000/v1/chat/completions \
 
 ```
 scripts/
-├── setup_environment.sh    # Install system & Python dependencies
-├── download_model.sh       # Download Qwen/Qwen3.5-27B from Hugging Face
-├── convert_checkpoint.sh   # Convert HF checkpoint → TRT-LLM format (TP=4)
-├── build_engine.sh         # Compile optimised TensorRT engine
-├── serve.sh                # Start OpenAI-compatible server
-└── run_inference.sh        # Send a test prompt and print the response
+└── qwen3.5-27b/
+  ├── setup_environment.sh    # Install system & Python dependencies
+  ├── download_model.sh       # Download Qwen/Qwen3.5-27B from Hugging Face
+  ├── convert_checkpoint.sh   # Convert HF checkpoint → TRT-LLM format (TP=4)
+  ├── build_engine.sh         # Compile optimised TensorRT engine
+  ├── serve.sh                # Start OpenAI-compatible server
+  └── run_inference.sh        # Send a test prompt and print the response
 
 models/                     # Downloaded HF weights (created by download_model.sh)
 checkpoints/                # TRT-LLM converted checkpoints
