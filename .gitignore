@@ -1,0 +1,23 @@
+# Python virtual environment
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Downloaded model weights and build artefacts
+models/
+checkpoints/
+engines/
+TensorRT-LLM/
+
+# Jupyter / editor artefacts
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
