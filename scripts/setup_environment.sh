@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # setup_environment.sh
-# Prepares an Ubuntu system to run Qwen3.5-27B with TensorRT-LLM on 4x RTX 4090.
+# Prepares a Linux system to run Qwen3.5-27B with TensorRT-LLM on 4x RTX 4090.
 #
-# Tested on: Ubuntu 22.04 LTS, NVIDIA driver 550+, CUDA 12.8, Python 3.10
+# Tested on: Ubuntu 22.04 LTS / CentOS Stream 9, NVIDIA driver 550+, CUDA 12.8,
+# Python 3.10+
 #
 # Usage:
 #   bash scripts/setup_environment.sh
@@ -19,12 +20,89 @@ PIP_DEFAULT_TIMEOUT="${PIP_DEFAULT_TIMEOUT:-60}"
 PIP_RETRIES="${PIP_RETRIES:-10}"
 PYTORCH_INDEX_URL="${PYTORCH_INDEX_URL:-https://download.pytorch.org/whl/${CUDA_VERSION}}"
 
+OS_ID=""
+OS_VERSION_ID=""
+OS_FAMILY=""
+
 PIP_COMMON_ARGS=(
     --index-url "${PIP_INDEX_URL}"
     --trusted-host "${PIP_TRUSTED_HOST}"
     --default-timeout "${PIP_DEFAULT_TIMEOUT}"
     --retries "${PIP_RETRIES}"
 )
+
+detect_os() {
+    if [[ ! -r /etc/os-release ]]; then
+        echo "ERROR: /etc/os-release not found; unable to detect the operating system." >&2
+        exit 1
+    fi
+
+    # shellcheck disable=SC1091
+    source /etc/os-release
+
+    OS_ID="${ID:-}"
+    OS_VERSION_ID="${VERSION_ID:-}"
+
+    case "${OS_ID}" in
+        ubuntu|debian)
+            OS_FAMILY="debian"
+            ;;
+        centos|rhel|rocky|almalinux)
+            OS_FAMILY="rhel"
+            ;;
+        *)
+            echo "ERROR: Unsupported distribution '${OS_ID}'. Supported families: Ubuntu/Debian and CentOS/RHEL 9-compatible systems." >&2
+            exit 1
+            ;;
+    esac
+}
+
+install_system_packages() {
+    echo "--- Installing system packages ---"
+    echo "Detected OS  : ${OS_ID} ${OS_VERSION_ID}"
+
+    case "${OS_FAMILY}" in
+        debian)
+            sudo apt-get update -y
+            sudo apt-get install -y \
+                python3 \
+                python3-pip \
+                python3-venv \
+                git \
+                git-lfs \
+                libopenmpi-dev \
+                openmpi-bin \
+                wget \
+                curl \
+                build-essential
+            ;;
+        rhel)
+            if ! command -v dnf &>/dev/null; then
+                echo "ERROR: dnf is required on CentOS/RHEL-like systems." >&2
+                exit 1
+            fi
+
+            sudo dnf install -y \
+                python3 \
+                python3-pip \
+                git \
+                git-lfs \
+                openmpi \
+                openmpi-devel \
+                wget \
+                curl \
+                gcc \
+                gcc-c++ \
+                make
+            ;;
+    esac
+
+    if git lfs version &>/dev/null; then
+        git lfs install
+    else
+        echo "WARNING: git-lfs is not installed; model downloads via Git LFS may fail." >&2
+    fi
+}
 
 echo "=== Qwen3.5-27B TensorRT-LLM Setup ==="
 echo "TensorRT-LLM : ${TENSORRT_LLM_VERSION}"
@@ -35,21 +113,8 @@ echo ""
 # ---------------------------------------------------------------------------
 # 1. System packages
 # ---------------------------------------------------------------------------
-echo "--- Installing system packages ---"
-sudo apt-get update -y
-sudo apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    git \
-    git-lfs \
-    libopenmpi-dev \
-    openmpi-bin \
-    wget \
-    curl \
-    build-essential
-
-git lfs install
+detect_os
+install_system_packages
 
 # ---------------------------------------------------------------------------
 # 2. Python virtual environment

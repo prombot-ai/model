@@ -4,11 +4,11 @@ Deployment scripts for running large language models in production.
 
 ---
 
-## Qwen3.5-27B on 4× RTX 4090 with TensorRT-LLM (Ubuntu)
+## Qwen3.5-27B on 4× RTX 4090 with TensorRT-LLM (Ubuntu or CentOS 9)
 
 End-to-end guide for deploying [Qwen/Qwen3.5-27B](https://huggingface.co/Qwen/Qwen3.5-27B) using
-[NVIDIA TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) on an Ubuntu host with four
-RTX 4090 GPUs.
+[NVIDIA TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) on an Ubuntu 22.04 or CentOS Stream 9
+host with four RTX 4090 GPUs.
 
 ### Hardware requirements
 
@@ -17,7 +17,7 @@ RTX 4090 GPUs.
 | GPUs | 4× NVIDIA RTX 4090 (24 GB VRAM each, 96 GB total) |
 | System RAM | 64 GB |
 | Disk | 120 GB free (model weights ≈ 55 GB in BF16) |
-| OS | Ubuntu 22.04 LTS |
+| OS | Ubuntu 22.04 LTS or CentOS Stream 9 |
 | NVIDIA driver | 550 or later |
 | CUDA | 12.8 |
 
@@ -26,7 +26,7 @@ RTX 4090 GPUs.
 - Python 3.10+
 - PyTorch 2.7.0 (CUDA 12.8 build)
 - TensorRT-LLM 0.20.0
-- `git`, `git-lfs`, `libopenmpi-dev`
+- `git`, `git-lfs`, OpenMPI development headers
 
 ---
 
@@ -41,8 +41,9 @@ bash scripts/setup_environment.sh
 source venv/bin/activate
 ```
 
-The script installs system packages, creates a Python virtual environment, and installs
-PyTorch and TensorRT-LLM.
+The script auto-detects Ubuntu/Debian vs CentOS/RHEL-style distributions, installs the
+matching system packages with `apt-get` or `dnf`, creates a Python virtual environment,
+and installs PyTorch and TensorRT-LLM.
 
 By default, Python packages are installed from the Tsinghua PyPI mirror to avoid timeouts
 from mainland China. You can override the mirror if needed:
