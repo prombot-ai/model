@@ -67,7 +67,14 @@ bash scripts/setup_environment.sh
 # Optional: set HF_TOKEN if the model requires authentication
 export HF_TOKEN=hf_your_token_here
 
-bash scripts/download_model.sh
+HF_ENDPOINT=https://hf-mirror.com bash scripts/download_model.sh
+```
+
+The downloader defaults to the China mirror `https://hf-mirror.com` to avoid direct
+connectivity issues to `huggingface.co`. To use the official endpoint instead:
+
+```bash
+HF_ENDPOINT=https://huggingface.co bash scripts/download_model.sh
 ```
 
 | Variable | Default | Description |
@@ -75,6 +82,7 @@ bash scripts/download_model.sh
 | `MODEL_DIR` | `./models/Qwen3.5-27B` | Local path for downloaded weights |
 | `HF_MODEL_ID` | `Qwen/Qwen3.5-27B` | Hugging Face model repository |
 | `HF_TOKEN` | *(empty)* | HF access token for gated models |
+| `HF_ENDPOINT` | `https://hf-mirror.com` | Hugging Face API/download endpoint or mirror |
 
 #### 3 — Convert the checkpoint
 
@@ -180,7 +188,7 @@ curl http://localhost:8000/v1/chat/completions \
 | `trtllm-build` not found | Package not installed | Run `pip install tensorrt_llm` in the venv |
 | GPU count warning | Fewer than 4 GPUs visible | Check `CUDA_VISIBLE_DEVICES`; confirm `nvidia-smi` shows all GPUs |
 | Slow inter-GPU bandwidth | RTX 4090s on PCIe without NVLink bridge | Performance is normal; NVLink bridges improve bandwidth for 2-GPU pairs |
-| HF download fails | Gated model | Provide `HF_TOKEN` |
+| HF download fails | Gated model or blocked official endpoint | Provide `HF_TOKEN`, or keep the default `HF_ENDPOINT=https://hf-mirror.com` |
 
 ---
 
