@@ -13,10 +13,23 @@ PYTHON_VERSION="${PYTHON_VERSION:-python3}"
 TENSORRT_LLM_VERSION="${TENSORRT_LLM_VERSION:-0.20.0}"
 TORCH_VERSION="${TORCH_VERSION:-2.7.0}"
 CUDA_VERSION="${CUDA_VERSION:-cu128}"
+PIP_INDEX_URL="${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}"
+PIP_TRUSTED_HOST="${PIP_TRUSTED_HOST:-pypi.tuna.tsinghua.edu.cn}"
+PIP_DEFAULT_TIMEOUT="${PIP_DEFAULT_TIMEOUT:-60}"
+PIP_RETRIES="${PIP_RETRIES:-10}"
+PYTORCH_INDEX_URL="${PYTORCH_INDEX_URL:-https://download.pytorch.org/whl/${CUDA_VERSION}}"
+
+PIP_COMMON_ARGS=(
+    --index-url "${PIP_INDEX_URL}"
+    --trusted-host "${PIP_TRUSTED_HOST}"
+    --default-timeout "${PIP_DEFAULT_TIMEOUT}"
+    --retries "${PIP_RETRIES}"
+)
 
 echo "=== Qwen3.5-27B TensorRT-LLM Setup ==="
 echo "TensorRT-LLM : ${TENSORRT_LLM_VERSION}"
 echo "PyTorch      : ${TORCH_VERSION}+${CUDA_VERSION}"
+echo "PyPI mirror   : ${PIP_INDEX_URL}"
 echo ""
 
 # ---------------------------------------------------------------------------
@@ -47,29 +60,32 @@ if [[ ! -d "venv" ]]; then
 fi
 # shellcheck source=/dev/null
 source venv/bin/activate
-pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade "${PIP_COMMON_ARGS[@]}" pip setuptools wheel
 
 # ---------------------------------------------------------------------------
 # 3. PyTorch (CUDA build)
 # ---------------------------------------------------------------------------
 echo "--- Installing PyTorch ${TORCH_VERSION}+${CUDA_VERSION} ---"
-pip install \
+python -m pip install \
     "torch==${TORCH_VERSION}" \
     torchvision \
     torchaudio \
-    --index-url "https://download.pytorch.org/whl/${CUDA_VERSION}"
+    --index-url "${PYTORCH_INDEX_URL}" \
+    --trusted-host "$(printf '%s' "${PYTORCH_INDEX_URL}" | sed -E 's#https?://([^/]+)/?.*#\1#')" \
+    --default-timeout "${PIP_DEFAULT_TIMEOUT}" \
+    --retries "${PIP_RETRIES}"
 
 # ---------------------------------------------------------------------------
 # 4. TensorRT-LLM
 # ---------------------------------------------------------------------------
 echo "--- Installing TensorRT-LLM ${TENSORRT_LLM_VERSION} ---"
-pip install "tensorrt_llm==${TENSORRT_LLM_VERSION}"
+python -m pip install "${PIP_COMMON_ARGS[@]}" "tensorrt_llm==${TENSORRT_LLM_VERSION}"
 
 # ---------------------------------------------------------------------------
 # 5. Additional inference tooling
 # ---------------------------------------------------------------------------
 echo "--- Installing additional dependencies ---"
-pip install \
+python -m pip install "${PIP_COMMON_ARGS[@]}" \
     huggingface_hub \
     transformers \
     accelerate \

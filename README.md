@@ -44,6 +44,23 @@ source venv/bin/activate
 The script installs system packages, creates a Python virtual environment, and installs
 PyTorch and TensorRT-LLM.
 
+By default, Python packages are installed from the Tsinghua PyPI mirror to avoid timeouts
+from mainland China. You can override the mirror if needed:
+
+```bash
+PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple \
+PIP_TRUSTED_HOST=mirrors.aliyun.com \
+bash scripts/setup_environment.sh
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PIP_INDEX_URL` | `https://pypi.tuna.tsinghua.edu.cn/simple` | Mirror used for PyPI packages such as `wheel` and `tensorrt_llm` |
+| `PIP_TRUSTED_HOST` | `pypi.tuna.tsinghua.edu.cn` | Host passed to pip for the mirror |
+| `PIP_DEFAULT_TIMEOUT` | `60` | pip network timeout in seconds |
+| `PIP_RETRIES` | `10` | pip retry count |
+| `PYTORCH_INDEX_URL` | `https://download.pytorch.org/whl/cu128` | Wheel index for PyTorch CUDA builds |
+
 #### 2 — Download the model
 
 ```bash
