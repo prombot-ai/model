@@ -102,8 +102,8 @@ install_system_packages() {
             # Add OpenMPI to PATH on RHEL/CentOS
             MPI_MODULE_FILE="/etc/profile.d/openmpi.sh"
             if [[ ! -f "${MPI_MODULE_FILE}" ]]; then
-                echo 'export PATH=/usr/lib64/openmpi/bin:$PATH' | sudo tee "${MPI_MODULE_FILE}"
-                echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib:$LD_LIBRARY_PATH' | sudo tee -a "${MPI_MODULE_FILE}"
+                echo 'export PATH=/usr/lib64/openmpi/bin:${PATH:-}' | sudo tee "${MPI_MODULE_FILE}"
+                echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib:${LD_LIBRARY_PATH:-}' | sudo tee -a "${MPI_MODULE_FILE}"
                 # shellcheck disable=SC1090
                 source "${MPI_MODULE_FILE}" || true
             fi
@@ -132,6 +132,16 @@ check_cuda() {
         nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader | \
             awk '{print "  GPU " NR-1 ": " $0}'
     fi
+}
+
+setup_venv() {
+    echo "--- Creating Python virtual environment (venv) ---"
+    if [[ ! -d "venv" ]]; then
+        "${PYTHON_VERSION}" -m venv venv
+    else
+        echo "venv already exists, skipping creation."
+    fi
+    PYTHON_VERSION="$(pwd)/venv/bin/python"
 }
 
 upgrade_pip() {
@@ -200,6 +210,7 @@ print_summary() {
 detect_os
 install_system_packages
 check_cuda
+setup_venv
 upgrade_pip
 install_torch
 install_tensorrt_llm
