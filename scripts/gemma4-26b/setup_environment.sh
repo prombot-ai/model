@@ -142,6 +142,13 @@ setup_venv() {
         echo "venv already exists, skipping creation."
     fi
     PYTHON_VERSION="$(pwd)/venv/bin/python"
+
+    # Bootstrap pip if absent — common on CentOS when the venv was created
+    # before python3-pip was installed, or when RHEL strips pip from the venv.
+    if ! "${PYTHON_VERSION}" -m pip --version &>/dev/null; then
+        echo "pip not found in venv; bootstrapping via ensurepip..."
+        "${PYTHON_VERSION}" -m ensurepip --upgrade
+    fi
 }
 
 upgrade_pip() {
