@@ -54,8 +54,7 @@ if [[ ! -d "${TRTLLM_REPO}" ]]; then
     echo "--- Cloning TensorRT-LLM ---"
     git config --global http.version HTTP/1.1
     git config --global http.postBuffer 524288000
-    git config --global url."https://gitclone.com".insteadOf "https://"
-    git clone --depth 1 https://github.com/NVIDIA/TensorRT-LLM.git "${TRTLLM_REPO}"
+    git clone --depth 1 https://mirror.ghproxy.com/https://github.com/NVIDIA/TensorRT-LLM.git "${TRTLLM_REPO}"
 fi
 
 if [[ ! -f "${CONVERT_SCRIPT}" ]]; then
